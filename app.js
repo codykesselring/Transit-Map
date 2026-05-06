@@ -1,33 +1,33 @@
 // ─── Chart.js defaults ───────────────────────────────────────────────────────
-Chart.defaults.color = '#94a3b8';
-Chart.defaults.borderColor = '#1e293b';
+Chart.defaults.color = '#a3956a';
+Chart.defaults.borderColor = '#2a2510';
 Chart.defaults.font.family = 'system-ui, -apple-system, sans-serif';
 
-// ─── Tab navigation ───────────────────────────────────────────────────────────
-const tabBtns = document.querySelectorAll('.tab-btn');
-const tabPanels = document.querySelectorAll('.tab-panel');
-let mapInitialized = false;
-let equityMapInitialized = false;
+// ─── Scroll navigation ────────────────────────────────────────────────────────
+const navLinks = document.querySelectorAll('.tab-btn');
 
-tabBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const target = btn.dataset.tab;
-    tabBtns.forEach(b => b.classList.remove('active'));
-    tabPanels.forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-' + target).classList.add('active');
-    if (target === 'access' && !mapInitialized) { initMap(); mapInitialized = true; }
-    if (target === 'equity' && !equityMapInitialized) { initEquityMap(); equityMapInitialized = true; }
+const sectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+      });
+    }
   });
-});
+}, { rootMargin: '-30% 0px -65% 0px' });
+
+document.querySelectorAll('.tab-panel').forEach(s => sectionObserver.observe(s));
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function rgba(r, g, b, a) { return `rgba(${r},${g},${b},${a})`; }
 
-const BLUE  = { solid: '#38bdf8', faded: rgba(56,189,248,0.15) };
+const BLUE  = { solid: '#f59e0b', faded: rgba(245,158,11,0.15) };
 const GREEN = { solid: '#34d399', faded: rgba(52,211,153,0.15) };
 const RED   = { solid: '#f87171', faded: rgba(248,113,113,0.15) };
 const AMB   = { solid: '#fbbf24', faded: rgba(251,191,36,0.15) };
+
+// Shared registry of all map markers so buildAccessibility can highlight them
+const mapMarkers = [];
 
 function heatColor(ratio) {
   // 0=blue, 0.5=yellow, 1=red
@@ -375,14 +375,15 @@ function initMap() {
     { lat: 40.7414, lng: -73.9792, street: '3rd Ave & 23rd St',      route: 'M23' },
   ];
 
-  // Plot Manhattan key route stops immediately (no API wait needed)x`
+  // Plot Manhattan key route stops immediately (no API wait needed)
   MANHATTAN_STOPS.forEach(s => {
-    L.circleMarker([s.lat, s.lng], {
+    const m = L.circleMarker([s.lat, s.lng], {
       radius: 5,
       fillColor: '#a78bfa',
       color: 'transparent',
       fillOpacity: 0.8,
     }).bindPopup(`<b>${s.street}</b><br>Manhattan<br>Route: ${s.route}`).addTo(map);
+    mapMarkers.push({ marker: m, lat: s.lat, lng: s.lng, defaultColor: '#a78bfa' });
   });
 
   // Fetch bus stop shelter data from NYC Open Data (outer boroughs well-covered)
@@ -402,12 +403,14 @@ function initMap() {
         const corner = s.corner ? ` (${s.corner})` : '';
         const boro   = s.boro_name || '';
         const isManhattan = boro.toLowerCase().includes('manhattan');
-        L.circleMarker([lat, lng], {
+        const fillColor = isManhattan ? '#a78bfa' : '#f59e0b';
+        const m = L.circleMarker([lat, lng], {
           radius: 5,
-          fillColor: isManhattan ? '#a78bfa' : '#38bdf8',
+          fillColor,
           color: 'transparent',
           fillOpacity: 0.75,
         }).bindPopup(`<b>${street}${corner}</b><br>${boro}<br>Shelter ID: ${s.shelter_id}`).addTo(map);
+        mapMarkers.push({ marker: m, lat, lng, defaultColor: fillColor });
       });
     })
     .catch(() => {
@@ -420,7 +423,7 @@ function initMap() {
     div.style.cssText = 'background:#1e293b;color:#e2e8f0;padding:8px 12px;border-radius:6px;font-size:12px;line-height:1.8';
     div.innerHTML = '<b style="color:#94a3b8">Bus Stops — All NYC</b><br>' +
       '<span style="color:#a78bfa">●</span> Manhattan (key route stops)<br>' +
-      '<span style="color:#38bdf8">●</span> Outer boroughs (shelter data)';
+      '<span style="color:#f59e0b">●</span> Outer boroughs (shelter data)';
     return div;
   };
   legend.addTo(map);
@@ -482,6 +485,45 @@ function initMap() {
     }
   });
 
+  // ── Neighborhood geographic centers for map highlighting ────────────────
+  const neighborhoodCenters = {
+    'Midtown':            { lat: 40.7549, lng: -73.9840, r: 0.018 },
+    'Chelsea':            { lat: 40.7465, lng: -74.0014, r: 0.015 },
+    'Lower East Side':    { lat: 40.7157, lng: -73.9863, r: 0.015 },
+    'Harlem':             { lat: 40.8116, lng: -73.9465, r: 0.018 },
+    'Upper West Side':    { lat: 40.7870, lng: -73.9754, r: 0.018 },
+    'Upper East Side':    { lat: 40.7736, lng: -73.9566, r: 0.018 },
+    'Washington Heights': { lat: 40.8448, lng: -73.9393, r: 0.022 },
+    'Lower Manhattan':    { lat: 40.7095, lng: -74.0096, r: 0.015 },
+    'Bronx':              { lat: 40.8448, lng: -73.8780, r: 0.055 },
+    'Flatbush':           { lat: 40.6526, lng: -73.9497, r: 0.022 },
+    'Flushing':           { lat: 40.7675, lng: -73.8330, r: 0.022 },
+    'Jamaica':            { lat: 40.6925, lng: -73.8067, r: 0.025 },
+    'Astoria':            { lat: 40.7721, lng: -73.9303, r: 0.022 },
+    'Williamsburg':       { lat: 40.7081, lng: -73.9571, r: 0.018 },
+    'Staten Island':      { lat: 40.5795, lng: -74.1502, r: 0.080 },
+  };
+
+  function highlightNeighborhoodOnMap(name) {
+    if (!mapMarkers.length) return;
+    if (!name) {
+      mapMarkers.forEach(({ marker, defaultColor }) => {
+        marker.setStyle({ fillColor: defaultColor, fillOpacity: 0.8, radius: 5 });
+      });
+      return;
+    }
+    const center = neighborhoodCenters[name];
+    if (!center) return;
+    mapMarkers.forEach(({ marker, lat, lng, defaultColor }) => {
+      const d = Math.sqrt(Math.pow(lat - center.lat, 2) + Math.pow(lng - center.lng, 2));
+      if (d <= center.r) {
+        marker.setStyle({ fillColor: '#ffffff', fillOpacity: 1, radius: 8 });
+      } else {
+        marker.setStyle({ fillColor: defaultColor, fillOpacity: 0.12, radius: 4 });
+      }
+    });
+  }
+
   // ── Stops per neighborhood bar (clickable) ───────────────────────────────
   let selectedIndex = null;
 
@@ -515,18 +557,20 @@ function initMap() {
         const name = neighborhoods[idx];
 
         if (selectedIndex === idx) {
-          // Deselect — reset to all neighborhoods
+          // Deselect — reset everything
           selectedIndex = null;
           stopsChart.data.datasets[0].backgroundColor = neighborhoods.map(() => BLUE.faded);
           stopsChart.data.datasets[0].borderColor      = neighborhoods.map(() => BLUE.solid);
           walkChart.data.datasets[0].data = walkData['All Neighborhoods'];
           document.getElementById('walkDistNeighborhood').textContent = 'All Neighborhoods';
+          highlightNeighborhoodOnMap(null);
         } else {
           selectedIndex = idx;
           stopsChart.data.datasets[0].backgroundColor = neighborhoods.map((_, i) => i === idx ? BLUE.solid : '#1e293b');
           stopsChart.data.datasets[0].borderColor      = neighborhoods.map((_, i) => i === idx ? BLUE.solid : '#334155');
           walkChart.data.datasets[0].data = walkData[name];
           document.getElementById('walkDistNeighborhood').textContent = name;
+          highlightNeighborhoodOnMap(name);
         }
 
         stopsChart.update();
@@ -872,3 +916,7 @@ function initEquityMap() {
     bandsEl.appendChild(div);
   });
 })();
+
+// ─── Initialize maps on load (sections always visible in scroll layout) ───────
+initMap();
+initEquityMap();

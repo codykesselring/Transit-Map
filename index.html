@@ -8,46 +8,61 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html { scroll-behavior: smooth; }
+
     body {
       font-family: system-ui, -apple-system, sans-serif;
-      background: #0f172a;
+      background: #111008;
       color: #e2e8f0;
       min-height: 100vh;
     }
 
     header {
-      background: #1e293b;
-      border-bottom: 1px solid #334155;
-      padding: 1rem 2rem;
+      background: #1c1a0f;
+      border-bottom: 1px solid #f59e0b44;
+      padding: 1.25rem 2rem;
+      margin-top: 46px;
     }
-    header h1 { font-size: 1.5rem; color: #f8fafc; }
-    header p { color: #94a3b8; font-size: 0.875rem; margin-top: 0.25rem; }
+    header h1 { font-size: 1.5rem; color: #fef3c7; letter-spacing: -0.01em; }
+    header p { color: #a3956a; font-size: 0.875rem; margin-top: 0.25rem; }
 
     .tabs {
       display: flex;
       gap: 0;
-      background: #1e293b;
-      border-bottom: 1px solid #334155;
+      background: #1c1a0f;
+      border-bottom: 2px solid #f59e0b33;
       padding: 0 2rem;
       overflow-x: auto;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      z-index: 100;
     }
     .tab-btn {
       padding: 0.75rem 1.25rem;
       border: none;
       background: transparent;
-      color: #94a3b8;
+      color: #a3956a;
       cursor: pointer;
       font-size: 0.875rem;
       font-weight: 500;
       border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
       white-space: nowrap;
+      text-decoration: none;
       transition: color 0.2s, border-color 0.2s;
     }
-    .tab-btn:hover { color: #e2e8f0; }
-    .tab-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; }
+    .tab-btn:hover { color: #fef3c7; }
+    .tab-btn.active { color: #f59e0b; border-bottom-color: #f59e0b; }
 
-    .tab-panel { display: none; padding: 2rem; }
-    .tab-panel.active { display: block; }
+    .tab-panel {
+      display: block;
+      padding: 2rem;
+      border-bottom: 2px solid #f59e0b22;
+      scroll-margin-top: 46px;
+    }
 
     .kpi-row {
       display: grid;
@@ -56,8 +71,8 @@
       margin-bottom: 2rem;
     }
     .kpi {
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: #1c1a0f;
+      border: 1px solid #f59e0b22;
       border-radius: 0.75rem;
       padding: 1.25rem;
     }
@@ -71,13 +86,13 @@
       gap: 1.5rem;
     }
     .chart-card {
-      background: #1e293b;
-      border: 1px solid #334155;
+      background: #1c1a0f;
+      border: 1px solid #f59e0b22;
       border-radius: 0.75rem;
       padding: 1.25rem;
     }
     .chart-card.full { grid-column: 1 / -1; }
-    .chart-title { font-size: 0.9rem; font-weight: 600; color: #cbd5e1; margin-bottom: 1rem; }
+    .chart-title { font-size: 0.9rem; font-weight: 600; color: #d4b97a; margin-bottom: 1rem; }
     .chart-wrap { position: relative; height: 260px; }
     .chart-wrap.tall { height: 340px; }
 
@@ -181,15 +196,15 @@
 </header>
 
 <nav class="tabs">
-  <button class="tab-btn active" data-tab="ridership">1. Ridership Trends</button>
-  <button class="tab-btn" data-tab="ontime">2. On-Time Performance</button>
-  <button class="tab-btn" data-tab="access">3. Stop Accessibility</button>
-  <button class="tab-btn" data-tab="routes">4. Route Comparison</button>
-  <button class="tab-btn" data-tab="equity">5. Bus Equity Analysis</button>
+  <a class="tab-btn active" href="#tab-ridership">1. Ridership Trends</a>
+  <a class="tab-btn" href="#tab-ontime">2. On-Time Performance</a>
+  <a class="tab-btn" href="#tab-access">3. Stop Accessibility</a>
+  <a class="tab-btn" href="#tab-routes">4. Route Comparison</a>
+  <a class="tab-btn" href="#tab-equity">5. Bus Equity Analysis</a>
 </nav>
 
 <!-- TAB 1: Ridership Trends -->
-<section id="tab-ridership" class="tab-panel active">
+<section id="tab-ridership" class="tab-panel">
   <div class="kpi-row">
     <div class="kpi"><div class="kpi-label">Total Rides (2024)</div><div class="kpi-value">312M</div><div class="kpi-sub">+18% vs 2023</div></div>
     <div class="kpi"><div class="kpi-label">Peak Day</div><div class="kpi-value">1.24M</div><div class="kpi-sub">Tues, Oct 15 2024</div></div>
