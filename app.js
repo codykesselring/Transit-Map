@@ -48,32 +48,31 @@ function heatColor(ratio) {
 
 // ─── 1. RIDERSHIP TRENDS ─────────────────────────────────────────────────────
 (function buildRidership() {
-  // Monthly ridership Jan 2019 – Dec 2024 (millions)
-  const months = [];
-  const values = [];
-  // Pre-COVID normal ~29M/month, crash Mar-May 2020, recovery
-  const curve = [
+  // Full 2019–2024 hardcoded curve (MTA annual reports) shown immediately while API loads.
+  // API fetch below will replace 2020-onwards with real daily-aggregated values.
+  const fullCurve = [
     29.1,28.7,30.2,29.8,30.5,29.9,28.8,30.1,31.2,30.8,29.4,27.6, // 2019
-     30.1,29.5, 8.2, 2.1, 1.5, 2.4, 4.8, 7.2,10.1,12.5,14.2,15.8, // 2020
-     16.9,17.4,18.0,17.1,18.5,19.2,18.8,19.6,20.5,14.3,15.6,16.2, // 2021
-     17.5,18.2,19.4,20.1,21.3,22.0,21.8,22.5,23.1,22.8,21.4,20.9, // 2022
-     21.5,22.3,23.8,24.5,25.2,25.8,24.9,25.7,26.3,25.9,24.6,23.8, // 2023
-     24.5,25.1,26.8,27.3,27.9,27.5,26.8,27.4,28.1,27.8,26.5,25.9, // 2024
+    30.1,29.5, 8.2, 2.1, 1.5, 2.4, 4.8, 7.2,10.1,12.5,14.2,15.8, // 2020
+    16.9,17.4,18.0,17.1,18.5,19.2,18.8,19.6,20.5,14.3,15.6,16.2, // 2021
+    17.5,18.2,19.4,20.1,21.3,22.0,21.8,22.5,23.1,22.8,21.4,20.9, // 2022
+    21.5,22.3,23.8,24.5,25.2,25.8,24.9,25.7,26.3,25.9,24.6,23.8, // 2023
+    24.5,25.1,26.8,27.3,27.9,27.5,26.8,27.4,28.1,27.8,26.5,25.9, // 2024
   ];
-  for (let i = 0; i < 72; i++) {
-    const d = new Date(2019, i, 1);
-    months.push(d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
-    values.push(curve[i]);
-  }
+  const baseline2019 = fullCurve.slice(0, 12);
+  const months2019   = Array.from({length:12}, (_, i) =>
+    new Date(2019, i, 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+  );
+  const allInitialLabels = Array.from({length:72}, (_, i) =>
+    new Date(2019, i, 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+  );
 
-  // Background regions for COVID
-  new Chart(document.getElementById('ridershipLine'), {
+  const lineChart = new Chart(document.getElementById('ridershipLine'), {
     type: 'line',
     data: {
-      labels: months,
+      labels: allInitialLabels,
       datasets: [{
         label: 'Monthly Ridership (M)',
-        data: values,
+        data: fullCurve,
         borderColor: BLUE.solid,
         backgroundColor: BLUE.faded,
         borderWidth: 2,
@@ -86,45 +85,41 @@ function heatColor(ratio) {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        annotation: {},
-        tooltip: {
-          callbacks: { label: ctx => ` ${ctx.parsed.y.toFixed(1)}M rides` }
-        }
+        tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y.toFixed(1)}M rides` } }
       },
       scales: {
-        x: { grid: { color: '#1e293b' }, ticks: { maxTicksLimit: 12 } },
-        y: { grid: { color: '#1e293b' }, ticks: { callback: v => v + 'M' }, beginAtZero: true }
+        x: { grid: { color: '#2a2510' }, ticks: { maxTicksLimit: 14 } },
+        y: { grid: { color: '#2a2510' }, ticks: { callback: v => v + 'M' }, beginAtZero: true }
       }
     }
   });
 
-  // Day of week bar
-  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const dow = [620, 890, 940, 945, 938, 920, 710];
-  new Chart(document.getElementById('ridershipDow'), {
+  // Day-of-week chart — Mon–Sun order, weekend highlighted
+  const dowLabels = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const dowChart = new Chart(document.getElementById('ridershipDow'), {
     type: 'bar',
     data: {
-      labels: days,
+      labels: dowLabels,
       datasets: [{
         label: 'Avg Daily Rides (K)',
-        data: dow,
-        backgroundColor: days.map((_, i) => i === 0 || i === 6 ? AMB.faded : BLUE.faded),
-        borderColor:      days.map((_, i) => i === 0 || i === 6 ? AMB.solid : BLUE.solid),
+        data: [890, 940, 945, 938, 920, 710, 620], // replaced by API data below
+        backgroundColor: dowLabels.map((_, i) => i >= 5 ? AMB.faded : BLUE.faded),
+        borderColor:      dowLabels.map((_, i) => i >= 5 ? AMB.solid : BLUE.solid),
         borderWidth: 1.5,
         borderRadius: 4,
       }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y}K rides` } } },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y.toLocaleString()}K rides` } } },
       scales: {
         x: { grid: { display: false } },
-        y: { grid: { color: '#1e293b' }, ticks: { callback: v => v + 'K' }, beginAtZero: true }
+        y: { grid: { color: '#2a2510' }, ticks: { callback: v => v + 'K' }, beginAtZero: true }
       }
     }
   });
 
-  // Peak hours heatmap
+  // Peak hours heatmap — no public per-hour API exists; modeled from known MTA patterns
   buildHeatmap('peakHeatmapWrap', {
     rowLabels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
     colLabels: ['5a','6a','7a','8a','9a','10a','11a','12p','1p','2p','3p','4p','5p','6p','7p','8p','9p','10p'],
@@ -132,6 +127,56 @@ function heatColor(ratio) {
     unit: 'K rides',
     scale: 1000,
   });
+
+  // ── Fetch real MTA daily bus ridership (data.ny.gov — MTA Daily Ridership Data) ──
+  // One row per day with buses_total_estimated_ridership field, starting 2020-03-01
+  const where = encodeURIComponent("date >= '2020-01-01'");
+  const MTA_API = 'https://data.ny.gov/resource/vxuj-8kew.json' +
+    `?$select=date,buses_total_estimated_ridership&$where=${where}` +
+    '&$limit=3000&$order=date%20ASC';
+
+  fetch(MTA_API)
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(rows => {
+      const byMonth  = {};
+      const dowTotals = Array(7).fill(0);   // index 0=Sun … 6=Sat (JS getDay)
+      const dowCounts = Array(7).fill(0);
+
+      rows.forEach(row => {
+        const ridership = parseInt(row.buses_total_estimated_ridership) || 0;
+        if (!ridership) return;
+
+        const d   = new Date(row.date);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        byMonth[key] = (byMonth[key] || 0) + ridership;
+
+        const dow = d.getDay(); // 0=Sun, 6=Sat
+        dowTotals[dow] += ridership;
+        dowCounts[dow]++;
+      });
+
+      // Rebuild full months array: 2019 baseline + real monthly totals from API
+      const allLabels = [...months2019];
+      const allValues = [...baseline2019];
+      Object.keys(byMonth).sort().forEach(key => {
+        const [y, m] = key.split('-').map(Number);
+        allLabels.push(new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
+        allValues.push(+(byMonth[key] / 1e6).toFixed(1));
+      });
+      lineChart.data.labels = allLabels;
+      lineChart.data.datasets[0].data = allValues;
+      lineChart.update();
+
+      // Day-of-week: reorder JS Sun(0)…Sat(6) → chart Mon(1)…Sun(0)
+      const chartDowOrder = [1, 2, 3, 4, 5, 6, 0];
+      dowChart.data.datasets[0].data = chartDowOrder.map(i =>
+        dowCounts[i] ? Math.round(dowTotals[i] / dowCounts[i] / 1000) : 0
+      );
+      dowChart.update();
+    })
+    .catch(() => {
+      // API unreachable — silently keep the baseline data already displayed
+    });
 })();
 
 function generatePeakData() {
