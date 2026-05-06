@@ -157,60 +157,6 @@
     .legend-item { display: flex; align-items: center; gap: 0.35rem; }
     .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
 
-    /* Environmental Impact */
-    .infographic {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1.5rem;
-      flex-wrap: wrap;
-      padding: 1.5rem 0;
-    }
-    .infographic-block {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .infographic-icon { font-size: 3rem; line-height: 1; }
-    .infographic-count { font-size: 1.6rem; font-weight: 700; color: #f8fafc; }
-    .infographic-label { font-size: 0.75rem; color: #64748b; text-align: center; }
-    .infographic-eq { font-size: 1.5rem; color: #334155; align-self: center; }
-
-    .calculator {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
-    }
-    @media (max-width: 600px) { .calculator { grid-template-columns: 1fr; } }
-    .calc-input-group { display: flex; flex-direction: column; gap: 0.4rem; }
-    .calc-input-group label { font-size: 0.8rem; color: #94a3b8; }
-    .calc-input-group input, .calc-input-group select {
-      background: #0f172a;
-      border: 1px solid #334155;
-      color: #f8fafc;
-      border-radius: 6px;
-      padding: 0.5rem 0.75rem;
-      font-size: 0.9rem;
-      width: 100%;
-    }
-    .calc-results {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 0.75rem;
-      margin-top: 0.5rem;
-    }
-    .calc-result-card {
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 0.5rem;
-      padding: 1rem;
-      text-align: center;
-    }
-    .calc-result-value { font-size: 1.4rem; font-weight: 700; color: #34d399; }
-    .calc-result-label { font-size: 0.72rem; color: #64748b; margin-top: 0.25rem; }
-
     /* Equity */
     #equity-map { height: 380px; border-radius: 0.5rem; }
     .income-band {
@@ -239,8 +185,7 @@
   <button class="tab-btn" data-tab="ontime">2. On-Time Performance</button>
   <button class="tab-btn" data-tab="access">3. Stop Accessibility</button>
   <button class="tab-btn" data-tab="routes">4. Route Comparison</button>
-  <button class="tab-btn" data-tab="env">5. Environmental Impact</button>
-  <button class="tab-btn" data-tab="equity">6. Bus Equity Analysis</button>
+  <button class="tab-btn" data-tab="equity">5. Bus Equity Analysis</button>
 </nav>
 
 <!-- TAB 1: Ridership Trends -->
@@ -339,53 +284,7 @@
   </div>
 </section>
 
-<!-- TAB 5: Environmental Impact -->
-<section id="tab-env" class="tab-panel">
-  <div class="kpi-row">
-    <div class="kpi"><div class="kpi-label">CO2 Saved (2024)</div><div class="kpi-value">234K tons</div><div class="kpi-sub">vs all riders driving</div></div>
-    <div class="kpi"><div class="kpi-label">Car Trips Replaced</div><div class="kpi-value">312M</div><div class="kpi-sub">annually</div></div>
-    <div class="kpi"><div class="kpi-label">Equivalent Trees</div><div class="kpi-value">3.8M</div><div class="kpi-sub">planted per year</div></div>
-    <div class="kpi"><div class="kpi-label">Gas Saved</div><div class="kpi-value">93M gal</div><div class="kpi-sub">vs solo driving</div></div>
-  </div>
-  <div class="charts-grid">
-    <div class="chart-card full">
-      <div class="chart-title">1 Full Bus = Cars Removed from the Road</div>
-      <div class="infographic" id="busCarInfographic"></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">CO2 Emissions per Passenger Mile (lbs) — EPA Data</div>
-      <div class="chart-wrap"><canvas id="emissionsBar"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Annual NYC Bus System CO2 Savings vs. Solo Driving (tons)</div>
-      <div class="chart-wrap"><canvas id="co2Line"></canvas></div>
-    </div>
-    <div class="chart-card full">
-      <div class="chart-title">Your Commute Calculator — How Much CO2 Does Taking the Bus Save?</div>
-      <div class="calculator" id="calculator">
-        <div class="calc-input-group">
-          <label>One-way commute distance (miles)</label>
-          <input type="number" id="calc-miles" value="5" min="0.5" max="50" step="0.5" />
-        </div>
-        <div class="calc-input-group">
-          <label>Days per week you commute</label>
-          <input type="number" id="calc-days" value="5" min="1" max="7" step="1" />
-        </div>
-        <div class="calc-input-group">
-          <label>Your car's fuel efficiency (MPG)</label>
-          <input type="number" id="calc-mpg" value="28" min="10" max="60" step="1" />
-        </div>
-        <div class="calc-input-group">
-          <label>Weeks per year you commute</label>
-          <input type="number" id="calc-weeks" value="50" min="1" max="52" step="1" />
-        </div>
-        <div class="calc-results" id="calc-results"></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- TAB 6: Bus Equity Analysis -->
+<!-- TAB 5: Bus Equity Analysis -->
 <section id="tab-equity" class="tab-panel">
   <div class="kpi-row">
     <div class="kpi"><div class="kpi-label">High-Income Avg Wait</div><div class="kpi-value">2.1 min</div><div class="kpi-sub">Top income quartile</div></div>
